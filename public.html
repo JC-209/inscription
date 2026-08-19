@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Inscription</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body>
+
+    <main class="container">
+
+        <section class="card">
+
+            <div class="logo">
+                INSCRIPTION
+            </div>
+
+            <h1>Bienvenue 👋</h1>
+
+            <p class="subtitle">
+                Remplissez le formulaire ci-dessous.
+            </p>
+
+            <form id="registrationForm">
+
+                <div class="field">
+
+                    <label>Nom</label>
+
+                    <input
+                        type="text"
+                        name="nom"
+                        placeholder="Votre nom"
+                        required
+                    >
+
+                </div>
+
+                <div class="field">
+
+                    <label>Prénom</label>
+
+                    <input
+                        type="text"
+                        name="prenom"
+                        placeholder="Votre prénom"
+                        required
+                    >
+
+                </div>
+
+                <div class="field">
+
+                    <label>Âge</label>
+
+                    <input
+                        type="number"
+                        name="age"
+                        min="1"
+                        max="120"
+                        placeholder="Votre âge"
+                        required
+                    >
+
+                </div>
+
+                <div class="field">
+
+                    <label>Classe</label>
+
+                    <input
+                        type="text"
+                        name="classe"
+                        placeholder="Ex : 2nde C"
+                        required
+                    >
+
+                </div>
+
+                <div class="field">
+
+                    <label>Photo</label>
+
+                    <input
+                        type="file"
+                        name="photo"
+                        accept="image/jpeg,image/png,image/webp"
+                        required
+                    >
+
+                    <small>
+                        JPG, PNG ou WEBP — 5 Mo maximum.
+                    </small>
+
+                </div>
+
+                <button
+                    type="submit"
+                    id="submitButton"
+                >
+                    Envoyer mon inscription
+                </button>
+
+                <div id="message"></div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

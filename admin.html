@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Administration</title>
+
+    <link
+        rel="stylesheet"
+        href="admin.css"
+    >
+
+</head>
+
+<body>
+
+    <main class="login-container">
+
+        <div class="login-card">
+
+            <h1>Administration</h1>
+
+            <p>
+                Connectez-vous pour accéder aux inscriptions.
+            </p>
+
+            <form id="loginForm">
+
+                <input
+                    id="username"
+                    type="text"
+                    placeholder="Nom d'utilisateur"
+                    required
+                >
+
+                <input
+                    id="password"
+                    type="password"
+                    placeholder="Mot de passe"
+                    required
+                >
+
+                <button type="submit">
+                    Connexion
+                </button>
+
+            </form>
+
+            <div id="loginMessage"></div>
+
+        </div>
+
+    </main>
+
+    <script src="admin.js"></script>
+
+</body>
+
+</html>

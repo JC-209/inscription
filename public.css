@@ -1,0 +1,129 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #17324d 0%, #24557a 48%, #b84444 100%);
+    color: #172b3d;
+    min-height: 100vh;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.card {
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, .8);
+    box-shadow: 0 20px 60px rgba(10, 29, 48, .28);
+    border-top: 6px solid #b84444;
+}
+
+.logo {
+    color: #17324d;
+    font-weight: 800;
+    letter-spacing: 3px;
+    margin-bottom: 25px;
+}
+
+h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #607385;
+    margin-bottom: 30px;
+}
+
+.field {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #17324d;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #c8d4df;
+    background: #f7f9fb;
+    color: #172b3d;
+    outline: none;
+}
+
+input:focus {
+    border-color: #24557a;
+    box-shadow: 0 0 0 3px rgba(36, 85, 122, .14);
+}
+
+small {
+    display: block;
+    color: #607385;
+    margin-top: 7px;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #17324d;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 160ms ease, transform 160ms ease;
+    border-bottom: 4px solid #b84444;
+}
+
+button:hover {
+    background: #24557a;
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+#message {
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.success {
+    color: #62d98c;
+}
+
+.error {
+    color: #ff6464;
+}
+
+@media (max-width: 500px) {
+
+    .card {
+        padding: 25px 20px;
+    }
+
+    h1 {
+        font-size: 27px;
+    }
+}

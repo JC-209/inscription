@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ADMIN</title>
+
+    <link
+        rel="stylesheet"
+        href="/admin.css"
+    >
+
+</head>
+
+<body>
+
+    <header class="header">
+
+        <h1>ADMIN</h1>
+
+        <button id="logout">
+            Déconnexion
+        </button>
+
+    </header>
+
+    <main class="dashboard">
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <span>INSCRITS</span>
+
+                <strong id="total">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+        <div class="actions">
+
+            <button id="refresh">
+                Actualiser
+            </button>
+
+            <button id="export">
+                Exporter CSV
+            </button>
+
+        </div>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>N°</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Âge</th>
+                        <th>Classe</th>
+                        <th>Photo</th>
+                        <th>Date</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="participants"></tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <script src="/admin.js"></script>
+
+</body>
+
+</html>
