@@ -203,7 +203,7 @@ async function loadDashboard() {
                 <td>
                     <button
                         class="delete"
-                        onclick="deleteParticipant(${person.id})"
+                        type="button"
                     >
                         Supprimer
                     </button>
@@ -214,11 +214,16 @@ async function loadDashboard() {
 
             const photo = row.querySelector(".photo");
             const placeholder = row.querySelector(".photo-placeholder");
+            const deleteButton = row.querySelector(".delete");
 
             photo.addEventListener("click", () => {
                 if (photo.getAttribute("src")) {
                     openPhotoPreview(photo.src);
                 }
+            });
+
+            deleteButton.addEventListener("click", () => {
+                deleteParticipant(person.id, row);
             });
 
             loadPhoto(photo, placeholder, person.id);
@@ -298,7 +303,7 @@ async function loadPhoto(image, placeholder, id) {
 }
 
 
-async function deleteParticipant(id) {
+async function deleteParticipant(id, row) {
 
     const confirmed =
         confirm(
@@ -321,7 +326,9 @@ async function deleteParticipant(id) {
     );
 
     if (response.ok) {
-        loadDashboard();
+        row.remove();
+        document.getElementById("total").textContent =
+            Math.max(0, Number(document.getElementById("total").textContent) - 1);
         return;
     }
 
