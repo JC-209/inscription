@@ -150,11 +150,12 @@ tbody tr:hover {
 }
 
 .photo {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 50%;
+    width: 76px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 6px;
     display: block;
+    padding: 2px;
     background: #edf2f5;
     cursor: zoom-in;
     transition: transform 160ms ease, box-shadow 160ms ease;
