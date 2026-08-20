@@ -161,6 +161,25 @@ tbody tr:hover {
     transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
+.photo-frame {
+    position: relative;
+    width: 76px;
+    min-height: 64px;
+}
+
+.photo-placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 4px;
+    border: 1px dashed #b9c6d0;
+    border-radius: 6px;
+    color: #748391;
+    font-size: 0.68rem;
+    text-align: center;
+}
+
 .photo:hover {
     transform: scale(1.08);
     box-shadow: 0 4px 12px rgba(23, 50, 77, 0.22);

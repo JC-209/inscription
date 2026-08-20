@@ -179,9 +179,14 @@ async function initDatabase() {
             prenom VARCHAR(100) NOT NULL,
             age INTEGER NOT NULL,
             classe VARCHAR(100) NOT NULL,
-            photo_filename TEXT NOT NULL,
+            photo_filename TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
+    `);
+
+    await pool.query(`
+        ALTER TABLE participants
+        ALTER COLUMN photo_filename DROP NOT NULL
     `);
 
     const admin = await pool.query(
@@ -322,6 +327,8 @@ app.post(
     upload.single("photo"),
     async (req, res) => {
 
+        let uploadedStoragePath = null;
+
         try {
 
             const {
@@ -338,13 +345,6 @@ app.post(
                 });
             }
 
-            if (!req.file) {
-
-                return res.status(400).json({
-                    message: "La photo est obligatoire."
-                });
-            }
-
             const ageNumber = Number(age);
 
             if (
@@ -358,13 +358,17 @@ app.post(
                 });
             }
 
-            const extension = path.extname(req.file.originalname).toLowerCase();
-            const filename =
-                `${Date.now()}-${Math.random().toString(36).substring(2)}${extension}`;
+            let photoFilename = null;
 
-            let photoFilename = filename;
+            if (req.file) {
+                const extension = path.extname(req.file.originalname).toLowerCase();
+                const filename =
+                    `${Date.now()}-${Math.random().toString(36).substring(2)}${extension}`;
 
-            if (supabase) {
+                if (!supabase) {
+                    throw new Error("Photo upload failed: Supabase Storage indisponible.");
+                }
+
                 const { error } = await supabase.storage
                     .from(PHOTO_BUCKET)
                     .upload(filename, req.file.buffer, {
@@ -373,12 +377,11 @@ app.post(
                     });
 
                 if (error) {
-                    throw error;
+                    throw new Error(`Photo upload failed: ${error.message}`);
                 }
 
+                uploadedStoragePath = filename;
                 photoFilename = `storage:${filename}`;
-            } else {
-                fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
             }
 
             const result = await pool.query(
@@ -405,10 +408,22 @@ app.post(
 
         } catch (error) {
 
+            if (uploadedStoragePath && supabase) {
+                await supabase.storage
+                    .from(PHOTO_BUCKET)
+                    .remove([uploadedStoragePath])
+                    .catch(cleanupError => console.error(
+                        "Erreur nettoyage photo:",
+                        cleanupError
+                    ));
+            }
+
             console.error(error);
 
             res.status(500).json({
-                message: "Impossible d'enregistrer l'inscription."
+                message: error.message.startsWith("Photo upload failed")
+                    ? error.message
+                    : "Impossible d'enregistrer l'inscription."
             });
         }
     }
@@ -466,29 +481,17 @@ app.get(
                 ORDER BY LOWER(nom), LOWER(prenom), id
             `);
 
-            const participants = await Promise.all(
-                result.rows.map(async participant => {
+            const participants = result.rows.map(participant => {
+                const {
+                    photo_filename: photoFilename,
+                    ...publicParticipant
+                } = participant;
 
-                    const {
-                        photo_filename: photoFilename,
-                        ...publicParticipant
-                    } = participant;
-
-                    if (!photoFilename.startsWith("storage:")) {
-                        return publicParticipant;
-                    }
-
-                    const storagePath = photoFilename.slice("storage:".length);
-                    const { data } = await supabase.storage
-                        .from(PHOTO_BUCKET)
-                        .createSignedUrl(storagePath, 3600);
-
-                    return {
-                        ...publicParticipant,
-                        photo_url: data?.signedUrl || null
-                    };
-                })
-            );
+                return {
+                    ...publicParticipant,
+                    has_photo: Boolean(photoFilename)
+                };
+            });
 
             res.json(participants);
 
@@ -530,17 +533,23 @@ app.get(
             const filename =
                 result.rows[0].photo_filename;
 
-            if (filename.startsWith("storage:")) {
+            if (filename && filename.startsWith("storage:")) {
                 const storagePath = filename.slice("storage:".length);
                 const { data, error } = await supabase.storage
                     .from(PHOTO_BUCKET)
-                    .createSignedUrl(storagePath, 60);
+                    .download(storagePath);
 
-                if (error || !data?.signedUrl) {
+                if (error || !data) {
                     return res.status(404).send("Photo introuvable.");
                 }
 
-                return res.redirect(data.signedUrl);
+                const buffer = Buffer.from(await data.arrayBuffer());
+                res.type(path.extname(storagePath));
+                return res.send(buffer);
+            }
+
+            if (!filename) {
+                return res.status(404).send("Aucune photo.");
             }
 
             const filepath =
@@ -589,15 +598,7 @@ app.delete(
             const filename =
                 result.rows[0].photo_filename;
 
-            await pool.query(
-                "DELETE FROM participants WHERE id = $1",
-                [req.params.id]
-            );
-
-            const filepath =
-                path.join(uploadDir, filename);
-
-            if (filename.startsWith("storage:")) {
+            if (filename && filename.startsWith("storage:")) {
                 const storagePath = filename.slice("storage:".length);
                 const { error } = await supabase.storage
                     .from(PHOTO_BUCKET)
@@ -606,9 +607,15 @@ app.delete(
                 if (error) {
                     throw error;
                 }
-            } else if (fs.existsSync(filepath)) {
+            } else if (filename && fs.existsSync(path.join(uploadDir, filename))) {
+                const filepath = path.join(uploadDir, filename);
                 fs.unlinkSync(filepath);
             }
+
+            await pool.query(
+                "DELETE FROM participants WHERE id = $1",
+                [req.params.id]
+            );
 
             res.json({
                 success: true
@@ -687,6 +694,24 @@ app.get(
 /* =========================
    LANCEMENT
 ========================= */
+
+app.use((error, req, res, next) => {
+
+    if (error instanceof multer.MulterError || String(error.message || "").includes("Format d'image")) {
+        return res.status(400).json({
+            message: error.message
+        });
+    }
+
+    if (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Erreur serveur."
+        });
+    }
+
+    next();
+});
 
 initDatabase()
     .then(() => {

@@ -188,13 +188,14 @@ async function loadDashboard() {
                 <td>${escapeHTML(person.classe)}</td>
 
                 <td>
-                    <img
-                        class="photo"
-                        src=""
-                        alt=""
-                        loading="lazy"
-                        onerror="this.classList.add('photo-missing')"
-                    >
+                    <div class="photo-frame">
+                        <img
+                            class="photo"
+                            alt=""
+                            loading="lazy"
+                        >
+                        <span class="photo-placeholder">Aucune photo</span>
+                    </div>
                 </td>
 
                 <td>${date}</td>
@@ -212,6 +213,7 @@ async function loadDashboard() {
             participants.appendChild(row);
 
             const photo = row.querySelector(".photo");
+            const placeholder = row.querySelector(".photo-placeholder");
 
             photo.addEventListener("click", () => {
                 if (photo.getAttribute("src")) {
@@ -219,7 +221,7 @@ async function loadDashboard() {
                 }
             });
 
-            loadPhoto(photo, person.id);
+            loadPhoto(photo, placeholder, person.id);
         });
 
     } catch (error) {
@@ -263,7 +265,7 @@ function openPhotoPreview(src) {
 }
 
 
-async function loadPhoto(image, id) {
+async function loadPhoto(image, placeholder, id) {
 
     try {
 
@@ -279,15 +281,18 @@ async function loadPhoto(image, id) {
 
         if (!response.ok) {
             image.classList.add("photo-missing");
+            placeholder.hidden = false;
             return;
         }
 
         const blob = await response.blob();
         image.src = URL.createObjectURL(blob);
         image.classList.remove("photo-missing");
+        placeholder.hidden = true;
 
     } catch (error) {
 
+        placeholder.hidden = false;
         console.error("Impossible de charger la photo.", error);
     }
 }
