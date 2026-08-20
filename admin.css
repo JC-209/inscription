@@ -176,9 +176,7 @@ tbody tr:hover {
     padding: 4px;
     border: 1px dashed #b9c6d0;
     border-radius: 6px;
-    color: #748391;
-    font-size: 0.68rem;
-    text-align: center;
+    background: #edf2f5;
 }
 
 .photo:hover {

@@ -194,7 +194,7 @@ async function loadDashboard() {
                             alt=""
                             loading="lazy"
                         >
-                        <span class="photo-placeholder">Aucune photo</span>
+                        <span class="photo-placeholder" aria-hidden="true"></span>
                     </div>
                 </td>
 
