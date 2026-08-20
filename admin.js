@@ -213,6 +213,12 @@ async function loadDashboard() {
 
             const photo = row.querySelector(".photo");
 
+            photo.addEventListener("click", () => {
+                if (photo.src) {
+                    openPhotoPreview(photo.src);
+                }
+            });
+
             if (!person.photo_url) {
                 loadPhoto(photo, person.id);
             }
@@ -222,6 +228,40 @@ async function loadDashboard() {
 
         console.error(error);
     }
+}
+
+
+function openPhotoPreview(src) {
+
+    const preview = document.createElement("div");
+    preview.className = "photo-preview";
+    preview.innerHTML = `
+        <button class="photo-preview-close" type="button" aria-label="Fermer">
+            ×
+        </button>
+        <img src="${src}" alt="Photo agrandie">
+    `;
+
+    document.body.appendChild(preview);
+
+    const closePreview = () => preview.remove();
+
+    preview.addEventListener("click", event => {
+        if (event.target === preview) {
+            closePreview();
+        }
+    });
+
+    preview
+        .querySelector(".photo-preview-close")
+        .addEventListener("click", closePreview);
+
+    document.addEventListener("keydown", function closeWithEscape(event) {
+        if (event.key === "Escape") {
+            closePreview();
+            document.removeEventListener("keydown", closeWithEscape);
+        }
+    });
 }
 
 
