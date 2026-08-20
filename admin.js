@@ -208,11 +208,42 @@ async function loadDashboard() {
             `;
 
             participants.appendChild(row);
+
+            const photo = row.querySelector(".photo");
+            loadPhoto(photo, person.id);
         });
 
     } catch (error) {
 
         console.error(error);
+    }
+}
+
+
+async function loadPhoto(image, id) {
+
+    try {
+
+        const response = await fetch(
+            `/api/admin/photo/${id}`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            return;
+        }
+
+        const blob = await response.blob();
+        image.src = URL.createObjectURL(blob);
+
+    } catch (error) {
+
+        console.error("Impossible de charger la photo.", error);
     }
 }
 
