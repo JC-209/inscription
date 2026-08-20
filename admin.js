@@ -190,8 +190,10 @@ async function loadDashboard() {
                 <td>
                     <img
                         class="photo"
-                        src="/api/admin/photo/${person.id}"
-                        alt="Photo"
+                        src="${person.photo_url || ""}"
+                        alt=""
+                        loading="lazy"
+                        onerror="this.classList.add('photo-missing')"
                     >
                 </td>
 
@@ -210,7 +212,10 @@ async function loadDashboard() {
             participants.appendChild(row);
 
             const photo = row.querySelector(".photo");
-            loadPhoto(photo, person.id);
+
+            if (!person.photo_url) {
+                loadPhoto(photo, person.id);
+            }
         });
 
     } catch (error) {

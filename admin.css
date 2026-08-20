@@ -154,6 +154,12 @@ tbody tr:hover {
     height: 50px;
     object-fit: cover;
     border-radius: 50%;
+    display: block;
+    background: #edf2f5;
+}
+
+.photo-missing {
+    opacity: 0.35;
 }
 
 td:first-child {

@@ -461,12 +461,37 @@ app.get(
                     prenom,
                     age,
                     classe,
+                    photo_filename,
                     created_at
                 FROM participants
                 ORDER BY LOWER(nom), LOWER(prenom), id
             `);
 
-            res.json(result.rows);
+            const participants = await Promise.all(
+                result.rows.map(async participant => {
+
+                    const {
+                        photo_filename: photoFilename,
+                        ...publicParticipant
+                    } = participant;
+
+                    if (!photoFilename.startsWith("storage:")) {
+                        return publicParticipant;
+                    }
+
+                    const storagePath = photoFilename.slice("storage:".length);
+                    const { data } = await supabase.storage
+                        .from(PHOTO_BUCKET)
+                        .createSignedUrl(storagePath, 3600);
+
+                    return {
+                        ...publicParticipant,
+                        photo_url: data?.signedUrl || null
+                    };
+                })
+            );
+
+            res.json(participants);
 
         } catch (error) {
 
