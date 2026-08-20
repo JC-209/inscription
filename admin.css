@@ -165,6 +165,7 @@ tbody tr:hover {
     position: relative;
     width: 76px;
     min-height: 64px;
+    cursor: zoom-in;
 }
 
 .photo-placeholder {
@@ -198,6 +199,10 @@ tbody tr:hover {
     padding: 32px;
     background: rgba(8, 20, 32, 0.86);
     cursor: zoom-out;
+}
+
+.photo-frame:hover .photo-placeholder {
+    border-color: #24557a;
 }
 
 .photo-preview img {

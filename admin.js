@@ -213,11 +213,12 @@ async function loadDashboard() {
             participants.appendChild(row);
 
             const photo = row.querySelector(".photo");
+            const photoFrame = row.querySelector(".photo-frame");
             const placeholder = row.querySelector(".photo-placeholder");
             const deleteButton = row.querySelector(".delete");
 
-            photo.addEventListener("click", () => {
-                if (photo.getAttribute("src")) {
+            photoFrame.addEventListener("click", () => {
+                if (photo.src && photo.getAttribute("src")) {
                     openPhotoPreview(photo.src);
                 }
             });
@@ -240,12 +241,18 @@ function openPhotoPreview(src) {
 
     const preview = document.createElement("div");
     preview.className = "photo-preview";
-    preview.innerHTML = `
-        <button class="photo-preview-close" type="button" aria-label="Fermer">
-            ×
-        </button>
-        <img src="${src}" alt="Photo agrandie">
-    `;
+
+    const closeButton = document.createElement("button");
+    closeButton.className = "photo-preview-close";
+    closeButton.type = "button";
+    closeButton.setAttribute("aria-label", "Fermer");
+    closeButton.textContent = "×";
+
+    const image = document.createElement("img");
+    image.src = src;
+    image.alt = "Photo agrandie";
+
+    preview.append(closeButton, image);
 
     document.body.appendChild(preview);
 
@@ -257,9 +264,7 @@ function openPhotoPreview(src) {
         }
     });
 
-    preview
-        .querySelector(".photo-preview-close")
-        .addEventListener("click", closePreview);
+    closeButton.addEventListener("click", closePreview);
 
     document.addEventListener("keydown", function closeWithEscape(event) {
         if (event.key === "Escape") {
