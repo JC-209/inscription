@@ -190,7 +190,7 @@ async function loadDashboard() {
                 <td>
                     <img
                         class="photo"
-                        src="${person.photo_url || ""}"
+                        src=""
                         alt=""
                         loading="lazy"
                         onerror="this.classList.add('photo-missing')"
@@ -214,14 +214,12 @@ async function loadDashboard() {
             const photo = row.querySelector(".photo");
 
             photo.addEventListener("click", () => {
-                if (photo.src) {
+                if (photo.getAttribute("src")) {
                     openPhotoPreview(photo.src);
                 }
             });
 
-            if (!person.photo_url) {
-                loadPhoto(photo, person.id);
-            }
+            loadPhoto(photo, person.id);
         });
 
     } catch (error) {
@@ -280,11 +278,13 @@ async function loadPhoto(image, id) {
         );
 
         if (!response.ok) {
+            image.classList.add("photo-missing");
             return;
         }
 
         const blob = await response.blob();
         image.src = URL.createObjectURL(blob);
+        image.classList.remove("photo-missing");
 
     } catch (error) {
 
@@ -304,22 +304,24 @@ async function deleteParticipant(id) {
         return;
     }
 
-    const response =
-        await fetch(
-            `/api/admin/participants/${id}`,
-            {
-                method: "DELETE",
-
-                headers: {
-                    Authorization:
-                        `Bearer ${token}`
-                }
+    const response = await fetch(
+        `/api/admin/participants/${id}`,
+        {
+            method: "DELETE",
+            headers: {
+                Authorization:
+                    `Bearer ${token}`
             }
-        );
+        }
+    );
 
     if (response.ok) {
         loadDashboard();
+        return;
     }
+
+    const data = await response.json().catch(() => ({}));
+    alert(data.message || "La suppression a échoué.");
 }
 
 
