@@ -196,6 +196,45 @@ async function initDatabase() {
         ALTER COLUMN photo_filename DROP NOT NULL
     `);
 
+    await pool.query(`
+        ALTER TABLE participants
+        ALTER COLUMN age DROP NOT NULL,
+        ALTER COLUMN classe DROP NOT NULL
+    `);
+
+    const ficheColumns = [
+        ["telephone", "VARCHAR(50)"],
+        ["email", "VARCHAR(255)"],
+        ["date_naissance", "TEXT"],
+        ["lieu_naissance", "TEXT"],
+        ["sexe", "TEXT"],
+        ["nationalite", "TEXT"],
+        ["situation_matrimoniale", "TEXT"],
+        ["adresse", "TEXT"],
+        ["ville", "TEXT"],
+        ["niveau_etudes", "TEXT"],
+        ["dernier_diplome", "TEXT"],
+        ["etablissement", "TEXT"],
+        ["specialite", "TEXT"],
+        ["annee_obtention", "TEXT"],
+        ["contact_nom", "TEXT"],
+        ["contact_lien", "TEXT"],
+        ["contact_telephone", "TEXT"]
+    ];
+
+    const existingColumns = await pool.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'participants'
+    `);
+    const columnNames = new Set(existingColumns.rows.map(row => row.column_name));
+
+    for (const [columnName, definition] of ficheColumns) {
+        if (!columnNames.has(columnName)) {
+            await pool.query(`ALTER TABLE participants ADD COLUMN ${columnName} ${definition}`);
+        }
+    }
+
     const admin = await pool.query(
         "SELECT id FROM admins WHERE username = $1",
         [process.env.ADMIN_USERNAME]
@@ -338,30 +377,14 @@ app.post(
 
         try {
 
-            const {
-                nom,
-                prenom,
-                age,
-                classe
-            } = req.body;
+            const nom = String(req.body.nom || "").trim();
+            const prenom = String(req.body.prenom || "").trim();
+            const telephone = String(req.body.telephone || "").trim();
 
-            if (!nom || !prenom || !age || !classe) {
+            if (!nom || !prenom || !telephone) {
 
                 return res.status(400).json({
-                    message: "Tous les champs sont obligatoires."
-                });
-            }
-
-            const ageNumber = Number(age);
-
-            if (
-                !Number.isInteger(ageNumber) ||
-                ageNumber < 1 ||
-                ageNumber > 120
-            ) {
-
-                return res.status(400).json({
-                    message: "Âge invalide."
+                    message: "Le nom, les prénoms et le téléphone sont obligatoires."
                 });
             }
 
@@ -391,18 +414,57 @@ app.post(
                 photoFilename = `storage:${filename}`;
             }
 
+            const fiche = {
+                email: String(req.body.email || "").trim(),
+                date_naissance: String(req.body.date_naissance || "").trim(),
+                lieu_naissance: String(req.body.lieu_naissance || "").trim(),
+                sexe: String(req.body.sexe || "").trim(),
+                nationalite: String(req.body.nationalite || "").trim(),
+                situation_matrimoniale: String(req.body.situation_matrimoniale || "").trim(),
+                adresse: String(req.body.adresse || "").trim(),
+                ville: String(req.body.ville || "").trim(),
+                niveau_etudes: String(req.body.niveau_etudes || "").trim(),
+                dernier_diplome: String(req.body.dernier_diplome || "").trim(),
+                etablissement: String(req.body.etablissement || "").trim(),
+                specialite: String(req.body.specialite || "").trim(),
+                annee_obtention: String(req.body.annee_obtention || "").trim(),
+                contact_nom: String(req.body.contact_nom || "").trim(),
+                contact_lien: String(req.body.contact_lien || "").trim(),
+                contact_telephone: String(req.body.contact_telephone || "").trim()
+            };
+
             const result = await pool.query(
                 `
                 INSERT INTO participants
-                (nom, prenom, age, classe, photo_filename)
-                VALUES ($1, $2, $3, $4, $5)
+                (nom, prenom, telephone, email, date_naissance, lieu_naissance,
+                 sexe, nationalite, situation_matrimoniale, adresse, ville,
+                 niveau_etudes, dernier_diplome, etablissement, specialite,
+                 annee_obtention, contact_nom, contact_lien, contact_telephone,
+                 photo_filename)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+                        $13, $14, $15, $16, $17, $18, $19, $20)
                 RETURNING id
                 `,
                 [
-                    nom.trim(),
-                    prenom.trim(),
-                    ageNumber,
-                    classe.trim(),
+                    nom,
+                    prenom,
+                    telephone,
+                    fiche.email,
+                    fiche.date_naissance,
+                    fiche.lieu_naissance,
+                    fiche.sexe,
+                    fiche.nationalite,
+                    fiche.situation_matrimoniale,
+                    fiche.adresse,
+                    fiche.ville,
+                    fiche.niveau_etudes,
+                    fiche.dernier_diplome,
+                    fiche.etablissement,
+                    fiche.specialite,
+                    fiche.annee_obtention,
+                    fiche.contact_nom,
+                    fiche.contact_lien,
+                    fiche.contact_telephone,
                     photoFilename
                 ]
             );
@@ -480,8 +542,23 @@ app.get(
                     id,
                     nom,
                     prenom,
-                    age,
-                    classe,
+                    telephone,
+                    email,
+                    date_naissance,
+                    lieu_naissance,
+                    sexe,
+                    nationalite,
+                    situation_matrimoniale,
+                    adresse,
+                    ville,
+                    niveau_etudes,
+                    dernier_diplome,
+                    etablissement,
+                    specialite,
+                    annee_obtention,
+                    contact_nom,
+                    contact_lien,
+                    contact_telephone,
                     photo_filename,
                     created_at
                 FROM participants
@@ -496,7 +573,8 @@ app.get(
 
                 return {
                     ...publicParticipant,
-                    has_photo: Boolean(photoFilename)
+                    has_photo: Boolean(photoFilename),
+                    photo_url: photoFilename ? `/api/admin/photo/${participant.id}` : null
                 };
             });
 
@@ -655,26 +733,65 @@ app.get(
                     id,
                     nom,
                     prenom,
-                    age,
-                    classe,
+                    telephone,
+                    email,
+                    date_naissance,
+                    lieu_naissance,
+                    sexe,
+                    nationalite,
+                    situation_matrimoniale,
+                    adresse,
+                    ville,
+                    niveau_etudes,
+                    dernier_diplome,
+                    etablissement,
+                    specialite,
+                    annee_obtention,
+                    contact_nom,
+                    contact_lien,
+                    contact_telephone,
                     created_at
                 FROM participants
                 ORDER BY LOWER(nom), LOWER(prenom), id
             `);
 
-            let csv =
-                "ID,Nom,Prénom,Âge,Classe,Date\n";
+            const headers = [
+                "ID", "Nom", "Prénoms", "Téléphone", "E-mail",
+                "Date de naissance", "Lieu de naissance", "Sexe", "Nationalité",
+                "Situation matrimoniale", "Adresse", "Ville / Commune",
+                "Niveau d'études", "Dernier diplôme", "Établissement",
+                "Filière / Spécialité", "Année d'obtention", "Personne à contacter",
+                "Lien", "Téléphone du contact", "Date d'enregistrement"
+            ];
+
+            let csv = `${headers.join(",")}\n`;
 
             for (const p of result.rows) {
-
-                csv += [
+                const values = [
                     p.id,
-                    `"${String(p.nom).replace(/"/g, '""')}"`,
-                    `"${String(p.prenom).replace(/"/g, '""')}"`,
-                    p.age,
-                    `"${String(p.classe).replace(/"/g, '""')}"`,
-                    p.created_at.toISOString()
-                ].join(",") + "\n";
+                    p.nom,
+                    p.prenom,
+                    p.telephone,
+                    p.email,
+                    p.date_naissance,
+                    p.lieu_naissance,
+                    p.sexe,
+                    p.nationalite,
+                    p.situation_matrimoniale,
+                    p.adresse,
+                    p.ville,
+                    p.niveau_etudes,
+                    p.dernier_diplome,
+                    p.etablissement,
+                    p.specialite,
+                    p.annee_obtention,
+                    p.contact_nom,
+                    p.contact_lien,
+                    p.contact_telephone,
+                    p.created_at ? new Date(p.created_at).toISOString() : ""
+                ].map(value => `"${String(value ?? "").replace(/"/g, '""')}"`);
+
+                csv += `${values.join(",")}\n`;
             }
 
             res.setHeader(
@@ -684,7 +801,7 @@ app.get(
 
             res.setHeader(
                 "Content-Disposition",
-                'attachment; filename="participants.csv"'
+                'attachment; filename="fiches-renseignements.csv"'
             );
 
             res.send(csv);

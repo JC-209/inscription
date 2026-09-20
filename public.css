@@ -16,12 +16,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 28px 18px;
 }
 
 .card {
     width: 100%;
-    max-width: 500px;
+    max-width: 980px;
     background: #ffffff;
     padding: 35px;
     border-radius: 20px;
@@ -33,7 +33,7 @@ body {
 .logo {
     color: #17324d;
     font-weight: 800;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     margin-bottom: 25px;
 }
 
@@ -47,8 +47,18 @@ h1 {
     margin-bottom: 30px;
 }
 
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
 .field {
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
 }
 
 label {
@@ -58,7 +68,8 @@ label {
     color: #17324d;
 }
 
-input {
+input,
+select {
     width: 100%;
     padding: 14px;
     border-radius: 10px;
@@ -68,7 +79,8 @@ input {
     outline: none;
 }
 
-input:focus {
+input:focus,
+select:focus {
     border-color: #24557a;
     box-shadow: 0 0 0 3px rgba(36, 85, 122, .14);
 }
@@ -91,6 +103,7 @@ button {
     cursor: pointer;
     transition: background 160ms ease, transform 160ms ease;
     border-bottom: 4px solid #b84444;
+    margin-top: 20px;
 }
 
 button:hover {
@@ -104,20 +117,23 @@ button:disabled {
 }
 
 #message {
-    margin-top: 20px;
+    margin-top: 18px;
     text-align: center;
     font-weight: bold;
 }
 
 .success {
-    color: #62d98c;
+    color: #1e9554;
 }
 
 .error {
-    color: #ff6464;
+    color: #d13d3d;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 700px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
 
     .card {
         padding: 25px 20px;

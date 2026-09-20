@@ -1,212 +1,95 @@
-const token =
-    localStorage.getItem("adminToken");
+const token = localStorage.getItem("adminToken");
 
-/* =========================
-   LOGIN
-========================= */
-
-const loginForm =
-    document.getElementById("loginForm");
+const loginForm = document.getElementById("loginForm");
 
 if (loginForm) {
+    loginForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
 
-    loginForm.addEventListener(
-        "submit",
-        async function (event) {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const message = document.getElementById("loginMessage");
 
-            event.preventDefault();
+        try {
+            const response = await fetch("/api/admin/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
 
-            const username =
-                document.getElementById("username").value;
-
-            const password =
-                document.getElementById("password").value;
-
-            const message =
-                document.getElementById("loginMessage");
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/admin/login",
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-                                username,
-                                password
-                            })
-                        }
-                    );
-
-                const data =
-                    await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message);
-                }
-
-                localStorage.setItem(
-                    "adminToken",
-                    data.token
-                );
-
-                window.location.href =
-                    "/admin/dashboard";
-
-            } catch (error) {
-
-                message.textContent =
-                    error.message;
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message);
             }
+
+            localStorage.setItem("adminToken", data.token);
+            window.location.href = "/admin/dashboard";
+        } catch (error) {
+            message.textContent = error.message;
         }
-    );
+    });
 }
 
-
-/* =========================
-   DASHBOARD
-========================= */
-
-const participants =
-    document.getElementById("participants");
+const participants = document.getElementById("participants");
 
 if (participants) {
-
     if (!token) {
-        window.location.href =
-            "/admin";
+        window.location.href = "/admin";
     }
 
     loadDashboard();
 
-    document
-        .getElementById("refresh")
-        .addEventListener(
-            "click",
-            loadDashboard
-        );
-
-    document
-        .getElementById("logout")
-        .addEventListener(
-            "click",
-            function () {
-
-                localStorage.removeItem(
-                    "adminToken"
-                );
-
-                window.location.href =
-                    "/admin";
-            }
-        );
-
-    document
-        .getElementById("export")
-        .addEventListener(
-            "click",
-            exportCSV
-        );
+    document.getElementById("refresh").addEventListener("click", loadDashboard);
+    document.getElementById("logout").addEventListener("click", function () {
+        localStorage.removeItem("adminToken");
+        window.location.href = "/admin";
+    });
+    document.getElementById("export").addEventListener("click", exportCSV);
 }
 
-
 async function loadDashboard() {
-
     try {
-
-        const statsResponse =
-            await fetch(
-                "/api/admin/stats",
-                {
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`
-                    }
-                }
-            );
+        const statsResponse = await fetch("/api/admin/stats", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
         if (statsResponse.status === 401) {
             logout();
             return;
         }
 
-        const stats =
-            await statsResponse.json();
+        const stats = await statsResponse.json();
+        document.getElementById("total").textContent = stats.total;
 
-        document.getElementById(
-            "total"
-        ).textContent = stats.total;
-
-
-        const response =
-            await fetch(
-                "/api/admin/participants",
-                {
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`
-                    }
-                }
-            );
+        const response = await fetch("/api/admin/participants", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
         if (response.status === 401) {
             logout();
             return;
         }
 
-        const data =
-            await response.json();
-
+        const data = await response.json();
         participants.innerHTML = "";
 
-        data.forEach((person, index) => {
-
-            const row =
-                document.createElement("tr");
-
-            const date =
-                new Date(
-                    person.created_at
-                ).toLocaleString("fr-FR");
+        data.forEach((person) => {
+            const row = document.createElement("tr");
+            const details = person.details || {};
+            const phone = escapeHTML(person.telephone || details.telephone || "—");
 
             row.innerHTML = `
-                <td>${index + 1}</td>
-
-                <td>${escapeHTML(person.nom)}</td>
-
-                <td>${escapeHTML(person.prenom)}</td>
-
-                <td>${person.age}</td>
-
-                <td>${escapeHTML(person.classe)}</td>
-
+                <td>${escapeHTML(person.nom || "—")}</td>
+                <td>${escapeHTML(person.prenom || "—")}</td>
+                <td>${phone}</td>
                 <td>
                     <div class="photo-frame">
-                        <img
-                            class="photo"
-                            alt=""
-                            loading="lazy"
-                        >
+                        <img class="photo" alt="" loading="lazy">
                         <span class="photo-placeholder" aria-hidden="true"></span>
                     </div>
                 </td>
-
-                <td>${date}</td>
-
                 <td>
-                    <button
-                        class="delete"
-                        type="button"
-                    >
-                        Supprimer
-                    </button>
+                    <button class="download" type="button">Télécharger</button>
                 </td>
             `;
 
@@ -215,7 +98,7 @@ async function loadDashboard() {
             const photo = row.querySelector(".photo");
             const photoFrame = row.querySelector(".photo-frame");
             const placeholder = row.querySelector(".photo-placeholder");
-            const deleteButton = row.querySelector(".delete");
+            const downloadButton = row.querySelector(".download");
 
             photoFrame.addEventListener("click", () => {
                 if (photo.src && photo.getAttribute("src")) {
@@ -223,22 +106,18 @@ async function loadDashboard() {
                 }
             });
 
-            deleteButton.addEventListener("click", () => {
-                deleteParticipant(person.id, row);
+            downloadButton.addEventListener("click", () => {
+                downloadParticipant(person);
             });
 
             loadPhoto(photo, placeholder, person.id);
         });
-
     } catch (error) {
-
         console.error(error);
     }
 }
 
-
 function openPhotoPreview(src) {
-
     const preview = document.createElement("div");
     preview.className = "photo-preview";
 
@@ -253,11 +132,9 @@ function openPhotoPreview(src) {
     image.alt = "Photo agrandie";
 
     preview.append(closeButton, image);
-
     document.body.appendChild(preview);
 
     const closePreview = () => preview.remove();
-
     preview.addEventListener("click", event => {
         if (event.target === preview) {
             closePreview();
@@ -274,20 +151,11 @@ function openPhotoPreview(src) {
     });
 }
 
-
 async function loadPhoto(image, placeholder, id) {
-
     try {
-
-        const response = await fetch(
-            `/api/admin/photo/${id}`,
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${token}`
-                }
-            }
-        );
+        const response = await fetch(`/api/admin/photo/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
         if (!response.ok) {
             image.classList.add("photo-missing");
@@ -299,41 +167,24 @@ async function loadPhoto(image, placeholder, id) {
         image.src = URL.createObjectURL(blob);
         image.classList.remove("photo-missing");
         placeholder.hidden = true;
-
     } catch (error) {
-
         placeholder.hidden = false;
         console.error("Impossible de charger la photo.", error);
     }
 }
 
-
 async function deleteParticipant(id, row) {
+    const confirmed = confirm("Voulez-vous vraiment supprimer cette fiche ?");
+    if (!confirmed) return;
 
-    const confirmed =
-        confirm(
-            "Voulez-vous vraiment supprimer cette inscription ?"
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    const response = await fetch(
-        `/api/admin/participants/${id}`,
-        {
-            method: "DELETE",
-            headers: {
-                Authorization:
-                    `Bearer ${token}`
-            }
-        }
-    );
+    const response = await fetch(`/api/admin/participants/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+    });
 
     if (response.ok) {
         row.remove();
-        document.getElementById("total").textContent =
-            Math.max(0, Number(document.getElementById("total").textContent) - 1);
+        document.getElementById("total").textContent = Math.max(0, Number(document.getElementById("total").textContent) - 1);
         return;
     }
 
@@ -341,56 +192,65 @@ async function deleteParticipant(id, row) {
     alert(data.message || "La suppression a échoué.");
 }
 
-
 async function exportCSV() {
+    const response = await fetch("/api/admin/export", {
+        headers: { Authorization: `Bearer ${token}` }
+    });
 
-    const response =
-        await fetch(
-            "/api/admin/export",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${token}`
-                }
-            }
-        );
+    if (!response.ok) return;
 
-    if (!response.ok) {
-        return;
-    }
-
-    const blob =
-        await response.blob();
-
-    const url =
-        URL.createObjectURL(blob);
-
-    const link =
-        document.createElement("a");
-
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
     link.href = url;
-    link.download = "participants.csv";
-
+    link.download = "fiches-renseignements.csv";
     link.click();
-
     URL.revokeObjectURL(url);
 }
 
+function downloadParticipant(person) {
+    const details = person.details || {};
+    const payload = {
+        nom: person.nom || "",
+        prenoms: person.prenom || "",
+        telephone: person.telephone || details.telephone || "",
+        email: person.email || details.email || "",
+        date_naissance: details.date_naissance || person.date_naissance || "",
+        lieu_naissance: details.lieu_naissance || person.lieu_naissance || "",
+        sexe: details.sexe || person.sexe || "",
+        nationalite: details.nationalite || person.nationalite || "",
+        situation_matrimoniale: details.situation_matrimoniale || person.situation_matrimoniale || "",
+        adresse: details.adresse || person.adresse || "",
+        ville: details.ville || person.ville || "",
+        niveau_etudes: details.niveau_etudes || person.niveau_etudes || "",
+        dernier_diplome: details.dernier_diplome || person.dernier_diplome || "",
+        etablissement: details.etablissement || person.etablissement || "",
+        specialite: details.specialite || person.specialite || "",
+        annee_obtention: details.annee_obtention || person.annee_obtention || "",
+        contact_nom: details.contact_nom || person.contact_nom || "",
+        contact_lien: details.contact_lien || person.contact_lien || "",
+        contact_telephone: details.contact_telephone || person.contact_telephone || "",
+        photo: person.has_photo ? `/api/admin/photo/${person.id}` : ""
+    };
 
-function logout() {
-
-    localStorage.removeItem(
-        "adminToken"
-    );
-
-    window.location.href =
-        "/admin";
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `fiche-${(person.nom || "personne").toLowerCase().replace(/\s+/g, "-")}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
+function logout() {
+    localStorage.removeItem("adminToken");
+    window.location.href = "/admin";
+}
 
 function escapeHTML(value) {
-
-    return String(value)
+    return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")

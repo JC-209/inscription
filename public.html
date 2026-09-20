@@ -4,13 +4,12 @@
 <head>
 
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Inscription</title>
+    <title>Fiche de renseignements</title>
 
     <link
         rel="stylesheet"
@@ -26,94 +25,127 @@
         <section class="card">
 
             <div class="logo">
-                INSCRIPTION
+                FICHE DE RENSEIGNEMENTS
             </div>
 
             <h1>Bienvenue 👋</h1>
 
             <p class="subtitle">
-                Remplissez le formulaire ci-dessous.
+                Complétez votre dossier ci-dessous.
             </p>
 
             <form id="registrationForm">
 
-                <div class="field">
+                <div class="grid two-columns">
 
-                    <label>Nom</label>
+                    <div class="field">
+                        <label>Nom</label>
+                        <input type="text" name="nom" placeholder="Votre nom" required>
+                    </div>
 
-                    <input
-                        type="text"
-                        name="nom"
-                        placeholder="Votre nom"
-                        required
-                    >
+                    <div class="field">
+                        <label>Prénoms</label>
+                        <input type="text" name="prenom" placeholder="Votre prénom" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Date de naissance</label>
+                        <input type="date" name="date_naissance">
+                    </div>
+
+                    <div class="field">
+                        <label>Lieu de naissance</label>
+                        <input type="text" name="lieu_naissance" placeholder="Lieu de naissance">
+                    </div>
+
+                    <div class="field">
+                        <label>Sexe</label>
+                        <select name="sexe">
+                            <option value="">Sélectionner</option>
+                            <option value="Masculin">Masculin</option>
+                            <option value="Féminin">Féminin</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Nationalité</label>
+                        <input type="text" name="nationalite" placeholder="Nationalité">
+                    </div>
+
+                    <div class="field">
+                        <label>Situation matrimoniale</label>
+                        <input type="text" name="situation_matrimoniale" placeholder="Ex. Célibataire">
+                    </div>
+
+                    <div class="field">
+                        <label>Adresse</label>
+                        <input type="text" name="adresse" placeholder="Adresse">
+                    </div>
+
+                    <div class="field">
+                        <label>Ville / Commune</label>
+                        <input type="text" name="ville" placeholder="Ville / Commune">
+                    </div>
+
+                    <div class="field">
+                        <label>Téléphone</label>
+                        <input type="tel" name="telephone" placeholder="Votre téléphone" required>
+                    </div>
+
+                    <div class="field">
+                        <label>E-mail</label>
+                        <input type="email" name="email" placeholder="Votre e-mail">
+                    </div>
+
+                    <div class="field">
+                        <label>Niveau d’études</label>
+                        <input type="text" name="niveau_etudes" placeholder="Niveau d’études">
+                    </div>
+
+                    <div class="field">
+                        <label>Dernier diplôme obtenu</label>
+                        <input type="text" name="dernier_diplome" placeholder="Dernier diplôme">
+                    </div>
+
+                    <div class="field">
+                        <label>Établissement fréquenté</label>
+                        <input type="text" name="etablissement" placeholder="Établissement">
+                    </div>
+
+                    <div class="field">
+                        <label>Filière / Spécialité</label>
+                        <input type="text" name="specialite" placeholder="Filière / Spécialité">
+                    </div>
+
+                    <div class="field">
+                        <label>Année d’obtention</label>
+                        <input type="text" name="annee_obtention" placeholder="Année">
+                    </div>
+
+                    <div class="field">
+                        <label>Personne à contacter</label>
+                        <input type="text" name="contact_nom" placeholder="Nom et prénoms">
+                    </div>
+
+                    <div class="field">
+                        <label>Lien avec la personne</label>
+                        <input type="text" name="contact_lien" placeholder="Lien avec la personne">
+                    </div>
+
+                    <div class="field">
+                        <label>Téléphone du contact</label>
+                        <input type="tel" name="contact_telephone" placeholder="Téléphone du contact">
+                    </div>
+
+                    <div class="field full-width">
+                        <label>Photo</label>
+                        <input type="file" name="photo" accept="image/jpeg,image/png">
+                        <small>JPG ou PNG — 5 Mo maximum. Facultatif.</small>
+                    </div>
 
                 </div>
 
-                <div class="field">
-
-                    <label>Prénom</label>
-
-                    <input
-                        type="text"
-                        name="prenom"
-                        placeholder="Votre prénom"
-                        required
-                    >
-
-                </div>
-
-                <div class="field">
-
-                    <label>Âge</label>
-
-                    <input
-                        type="number"
-                        name="age"
-                        min="1"
-                        max="120"
-                        placeholder="Votre âge"
-                        required
-                    >
-
-                </div>
-
-                <div class="field">
-
-                    <label>Classe</label>
-
-                    <input
-                        type="text"
-                        name="classe"
-                        placeholder="Ex : 2nde C"
-                        required
-                    >
-
-                </div>
-
-                <div class="field">
-
-                    <label>Photo</label>
-
-                    <input
-                        type="file"
-                        name="photo"
-                        accept="image/jpeg,image/png"
-                    >
-
-                    <small>
-                        JPG ou PNG — 5 Mo maximum. Facultatif.
-                    </small>
-
-                </div>
-
-                <button
-                    type="submit"
-                    id="submitButton"
-                >
-                    Envoyer mon inscription
-                </button>
-
+                <button type="submit" id="submitButton">Enregistrer la fiche</button>
                 <div id="message"></div>
 
             </form>
