@@ -37,7 +37,14 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === "production"
         ? { rejectUnauthorized: false }
-        : false
+        : false,
+    connectionTimeoutMillis: 10000,
+    query_timeout: 15000,
+    idleTimeoutMillis: 30000
+});
+
+pool.on("error", error => {
+    console.error("Erreur de connexion PostgreSQL:", error.message);
 });
 
 /* =========================
@@ -154,21 +161,28 @@ app.use(
 
 async function initDatabase() {
 
+    const requiredEnvironment = [
+        "DATABASE_URL",
+        "ADMIN_USERNAME",
+        "ADMIN_PASSWORD"
+    ];
+
+    if (process.env.NODE_ENV === "production") {
+        requiredEnvironment.push(
+            "SUPABASE_URL",
+            "SUPABASE_SERVICE_ROLE_KEY"
+        );
+    }
+
+    const missingEnvironment = requiredEnvironment.filter(name => !process.env[name]);
+    if (missingEnvironment.length > 0) {
+        throw new Error(`Variables d'environnement manquantes: ${missingEnvironment.join(", ")}`);
+    }
+
     if (process.env.NODE_ENV === "production" && !supabase) {
         throw new Error(
             "SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont obligatoires en production."
         );
-    }
-
-    if (supabase) {
-        const { error } = await supabase.storage.createBucket(
-            PHOTO_BUCKET,
-            { public: false }
-        );
-
-        if (error && !error.message.toLowerCase().includes("already exists")) {
-            throw error;
-        }
     }
 
     await pool.query(`
